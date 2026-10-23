@@ -197,6 +197,53 @@ make contract-test NEIGHBOR_BASE_URL=http://127.0.0.1:8081
 
 `NEIGHBOR_REPO` may also be a local path to their cloned repository.
 
+### On Windows
+
+`make` is not installed on Windows by default, so every `make` command above has
+a plain equivalent. Run these from the repository root.
+
+| Instead of | Run |
+|---|---|
+| `make run` | `dotnet run --urls http://0.0.0.0:8080` |
+| `make test` | `dotnet test tests\StarterService.Tests` |
+| `make coverage` | `dotnet test tests\StarterService.Tests --collect:"XPlat Code Coverage"` |
+
+**The contract test needs the address in an environment variable**, and the
+`VAR=value command` form in the examples above is Unix shell syntax that does
+not work in Windows. Set the variable on its own line first.
+
+In Command Prompt:
+
+```bat
+set NEIGHBOR_BASE_URL=http://10.0.0.42:8080
+dotnet test tests\StarterService.Tests --filter FullyQualifiedName~NeighborContractTests
+```
+
+In PowerShell:
+
+```powershell
+$env:NEIGHBOR_BASE_URL = "http://10.0.0.42:8080"
+dotnet test tests\StarterService.Tests --filter FullyQualifiedName~NeighborContractTests
+```
+
+The variable lasts only as long as that terminal window, so set it again in a
+new one.
+
+**Find the address to give your neighbour** with `ipconfig`, and read the IPv4
+address of the adapter you are actually connected through — usually "Wireless
+LAN adapter Wi-Fi".
+
+**If they still cannot reach you**, Windows Defender Firewall is the usual
+reason. In a PowerShell window opened as Administrator:
+
+```powershell
+New-NetFirewallRule -DisplayName "SE Lab 8080" -Direction Inbound `
+  -LocalPort 8080 -Protocol TCP -Action Allow
+```
+
+Remove it after the session with
+`Remove-NetFirewallRule -DisplayName "SE Lab 8080"`.
+
 ### Files added for this session
 
 - `Orders.cs`: order validation and the in-memory store — the logic under unit test.
