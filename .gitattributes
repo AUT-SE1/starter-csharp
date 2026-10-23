@@ -4,3 +4,6 @@
 *.py text eol=lf
 *.java text eol=lf
 *.cs text eol=lf
+
+# Keep the helper script out of the repository language statistics.
+scripts/** linguist-vendored

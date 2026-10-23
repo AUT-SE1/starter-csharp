@@ -1,0 +1,19 @@
+# Fallback for Session 05, when the lab network will not carry traffic between
+# machines — client isolation on the Wi-Fi, or a desktop firewall.
+#
+# It runs the NEIGHBOURING TEAM's service on your own machine, so the contract
+# test still sends real HTTP to a real implementation of their service. Only
+# the address changes.
+#
+#   NEIGHBOR_REPO=https://github.com/AUT-SE1/starter-go.git \
+#     docker compose -f docker-compose.neighbor.yml up --build -d
+#   make contract-test NEIGHBOR_BASE_URL=http://127.0.0.1:8081
+#
+# NEIGHBOR_REPO may also be a local path to their cloned repository.
+services:
+  neighbor:
+    build:
+      context: ${NEIGHBOR_REPO:?set NEIGHBOR_REPO to your neighbour repository URL or local path}
+    ports:
+      - "8081:8080"
+    restart: unless-stopped

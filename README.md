@@ -105,6 +105,110 @@ dotnet run --no-launch-profile --urls http://127.0.0.1:8081
 - `.gitignore`: excludes generated files and local settings.
 - `scripts/verify_health.py`: optional black-box API verification.
 
+## Session 05 — Testing
+
+This session adds a second endpoint, a test suite, and a contract test that runs
+against the **neighbouring team's running service** rather than against a mock.
+
+### The orders endpoint
+
+`POST /orders` takes `{"item": "...", "quantity": N}` and answers `201` with the
+created order, or `400` with `{"error": "validation_failed", "field": "..."}`.
+`GET /orders/{id}` answers `200` with the order or `404` with
+`{"error": "not_found"}`. The full contract is in `openapi.yaml`, and
+`openapi.json` is the same document in the form the tests read.
+
+The validation bounds are part of that contract: `item` is 1 to 64 characters
+after trimming, `quantity` is an integer from 1 to 1000.
+
+### Install the test dependencies
+
+The first `dotnet test` restores xUnit, Moq and coverlet:
+
+```bash
+dotnet restore tests/StarterService.Tests
+```
+
+### Run the tests
+
+```bash
+make test        # or: dotnet test tests/StarterService.Tests
+```
+
+The contract tests report as **skipped** until you point them at a neighbour —
+see below. A skipped contract test is not a passing one.
+
+### Coverage
+
+```bash
+make coverage    # or: dotnet test --collect:"XPlat Code Coverage"
+```
+
+The report lands in the Cobertura file under `tests/StarterService.Tests/TestResults/`. The number on its own is not the point: your
+report has to explain what is *not* covered and why.
+
+### Put your sandbox on the network
+
+Your neighbouring team cannot reach `127.0.0.1` on your machine. Bind every
+interface instead:
+
+```bash
+make run        # listens on 0.0.0.0:8080
+# or in Docker:
+make sandbox
+```
+
+Then find your address and give it to them:
+
+```bash
+ip addr                    # Linux
+ipconfig                   # Windows
+ipconfig getifaddr en0     # macOS
+```
+
+They will use `http://<your-ip>:8080`. If they cannot reach it, the usual
+causes are a desktop firewall blocking the port and the service still listening
+on localhost.
+
+### Run the contract test against your neighbour
+
+```bash
+make contract-test NEIGHBOR_BASE_URL=http://10.0.0.42:8080
+```
+
+It sends real HTTP to their service and checks every response against
+`openapi.json`. Each call prints a timestamp — copy that output into your
+report, it is the evidence that the test ran against a real address.
+
+Two `TODO(team)` markers in the contract test are the only things you should
+need to change: the path, and the request body, if your neighbour's service
+differs from the shared contract.
+
+### If the lab network blocks machine-to-machine traffic
+
+Run your neighbour's service on your own machine instead. The test stays real —
+real HTTP against a real implementation — only the address changes:
+
+```bash
+NEIGHBOR_REPO=https://github.com/AUT-SE1/starter-go.git \
+  docker compose -f docker-compose.neighbor.yml up --build -d
+make contract-test NEIGHBOR_BASE_URL=http://127.0.0.1:8081
+```
+
+`NEIGHBOR_REPO` may also be a local path to their cloned repository.
+
+### Files added for this session
+
+- `Orders.cs`: order validation and the in-memory store — the logic under unit test.
+- `tests/StarterService.Tests/OrdersTests.cs`: unit tests.
+- `tests/StarterService.Tests/OrderApiTests.cs`: integration tests through `WebApplicationFactory`.
+- `tests/StarterService.Tests/Contract/NeighborContractTests.cs`: the contract test.
+- `tests/StarterService.Tests/Contract/OpenApiCheck.cs`: a small OpenAPI schema check.
+- `openapi.yaml` / `openapi.json`: the shared contract.
+- `docs/test-matrix.md`: the matrix to fill in during the session.
+- `Makefile`: `run`, `test`, `coverage`, `contract-test`, `sandbox`.
+- `docker-compose.yml`: your sandbox. `docker-compose.neighbor.yml`: the fallback.
+
 ## Publish this starter as a new repository
 
 Create an **empty** GitHub repository named `starter-csharp`. Do not initialize it with a README,

@@ -4,4 +4,13 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- The test project under tests/ builds on its own. -->
+    <Compile Remove="tests/**" />
+    <Content Remove="tests/**" />
+    <None Remove="tests/**" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="StarterService.Tests" />
+  </ItemGroup>
 </Project>
