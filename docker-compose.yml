@@ -1,0 +1,20 @@
+# Your own sandbox, for the neighbouring team to test against.
+#
+#   docker compose up --build -d
+#
+# The service binds 0.0.0.0 inside the container and the port below publishes
+# it on every interface of your machine, so your neighbour can reach it at
+# http://<your-ip>:8080. Find your address with `ip addr` (Linux),
+# `ipconfig` (Windows) or `ipconfig getifaddr en0` (macOS).
+services:
+  service:
+    build: .
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://127.0.0.1:8080/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
