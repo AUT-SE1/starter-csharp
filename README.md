@@ -190,12 +190,21 @@ Run your neighbour's service on your own machine instead. The test stays real â€
 real HTTP against a real implementation â€” only the address changes:
 
 ```bash
-NEIGHBOR_REPO=https://github.com/AUT-SE1/starter-go.git \
+NEIGHBOR_REPO=https://github.com/AUT-SE1/starter-java.git \
   docker compose -f docker-compose.neighbor.yml up --build -d
 make contract-test NEIGHBOR_BASE_URL=http://127.0.0.1:8081
 ```
 
 `NEIGHBOR_REPO` may also be a local path to their cloned repository.
+
+If port 8081 is already taken on your machine, choose another one with
+`NEIGHBOR_PORT`:
+
+```bash
+NEIGHBOR_PORT=8091 NEIGHBOR_REPO=https://github.com/AUT-SE1/starter-java.git \
+  docker compose -f docker-compose.neighbor.yml up --build -d
+make contract-test NEIGHBOR_BASE_URL=http://127.0.0.1:8091
+```
 
 ### On Windows
 

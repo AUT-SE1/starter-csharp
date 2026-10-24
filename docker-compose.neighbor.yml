@@ -5,15 +5,29 @@
 # test still sends real HTTP to a real implementation of their service. Only
 # the address changes.
 #
-#   NEIGHBOR_REPO=https://github.com/AUT-SE1/starter-go.git \
+#   NEIGHBOR_REPO=https://github.com/AUT-SE1/starter-java.git \
 #     docker compose -f docker-compose.neighbor.yml up --build -d
 #   make contract-test NEIGHBOR_BASE_URL=http://127.0.0.1:8081
 #
 # NEIGHBOR_REPO may also be a local path to their cloned repository.
+#
+# If port 8081 is already taken on your machine, pick another one:
+#
+#   NEIGHBOR_PORT=8091 NEIGHBOR_REPO=... docker compose -f docker-compose.neighbor.yml up --build -d
+#   make contract-test NEIGHBOR_BASE_URL=http://127.0.0.1:8091
+#
+# Find a free port with:
+#   for p in $(seq 8081 8120); do ss -lntH "sport = :$p" | grep -q . || { echo "$p"; break; }; done
+#
+# Both variables have defaults so that `ps`, `logs` and `down` work without
+# repeating them. The default repository is the Go starter, which is handy for
+# a dry run but is probably not your neighbour — set NEIGHBOR_REPO for the
+# real thing. To avoid repeating it, put it in a .env file beside this one:
+#   echo 'NEIGHBOR_REPO=https://github.com/AUT-SE1/starter-java.git' > .env
 services:
   neighbor:
     build:
-      context: ${NEIGHBOR_REPO:?set NEIGHBOR_REPO to your neighbour repository URL or local path}
+      context: ${NEIGHBOR_REPO:-https://github.com/AUT-SE1/starter-go.git}
     ports:
-      - "8081:8080"
+      - "${NEIGHBOR_PORT:-8081}:8080"
     restart: unless-stopped
